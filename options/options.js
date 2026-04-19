@@ -14,7 +14,7 @@ function normalizeHost(raw) {
 function renderSites() {
   siteList.innerHTML = "";
   if (sites.length === 0) {
-    siteList.innerHTML = `<li style="color:#aaa;font-size:12px;background:none;padding:4px 0">No sites added yet.</li>`;
+    siteList.innerHTML = `<li class="empty-hint" style="background:none;padding:4px 0">No sites added yet.</li>`;
     return;
   }
   sites.forEach((site, i) => {
@@ -27,16 +27,15 @@ function renderSites() {
 function addSite() {
   const val = normalizeHost(newSiteInput.value);
   if (!val) return;
-  if (sites.includes(val)) {
-    newSiteInput.value = "";
-    return;
+  if (!sites.includes(val)) {
+    sites.push(val);
+    renderSites();
   }
-  sites.push(val);
-  renderSites();
   newSiteInput.value = "";
+  newSiteInput.focus();
 }
 
-siteList.addEventListener("click", (e) => {
+siteList.addEventListener("click", e => {
   if (e.target.dataset.i !== undefined) {
     sites.splice(Number(e.target.dataset.i), 1);
     renderSites();
@@ -44,17 +43,16 @@ siteList.addEventListener("click", (e) => {
 });
 
 addSiteBtn.addEventListener("click", addSite);
-newSiteInput.addEventListener("keydown", (e) => { if (e.key === "Enter") addSite(); });
+newSiteInput.addEventListener("keydown", e => { if (e.key === "Enter") addSite(); });
 
 saveBtn.addEventListener("click", async () => {
-  const key = apiKeyInput.value.trim();
-  await browser.storage.local.set({ openai_key: key, whitelist: sites });
+  await browser.storage.local.set({ openai_key: apiKeyInput.value.trim(), whitelist: sites });
   saveStatus.textContent = "✓ Settings saved!";
   saveStatus.className = "";
   setTimeout(() => saveStatus.textContent = "", 3000);
 });
 
-// Load saved data
+// Load on open
 browser.storage.local.get(["openai_key", "whitelist"]).then(({ openai_key, whitelist = [] }) => {
   if (openai_key) apiKeyInput.value = openai_key;
   sites = whitelist.map(normalizeHost).filter(Boolean);

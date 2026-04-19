@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
   "name": "Whisper STT",
-  "version": "2.0",
-  "description": "Speech-to-text via OpenAI Whisper. Auto-activates on whitelisted sites, or manually via toolbar.",
+  "version": "0.3",
+  "description": "Speech-to-text via OpenAI Whisper. Record from popup or inline mic button on whitelisted sites.",
 
   "permissions": ["activeTab", "storage", "tabs"],
 
