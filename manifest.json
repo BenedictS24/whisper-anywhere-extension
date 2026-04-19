@@ -1,0 +1,33 @@
+{
+  "manifest_version": 2,
+  "name": "Whisper STT",
+  "version": "2.0",
+  "description": "Speech-to-text via OpenAI Whisper. Auto-activates on whitelisted sites, or manually via toolbar.",
+
+  "permissions": ["activeTab", "storage", "tabs"],
+
+  "browser_action": {
+    "default_icon": {
+      "48": "icons/mic-idle.svg"
+    },
+    "default_popup": "popup/popup.html",
+    "default_title": "Whisper STT"
+  },
+
+  "background": {
+    "scripts": ["background.js"]
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "css": ["content.css"]
+    }
+  ],
+
+  "options_ui": {
+    "page": "options/options.html",
+    "open_in_tab": true
+  }
+}

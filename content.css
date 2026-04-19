@@ -1,0 +1,46 @@
+.wstt-mic-btn {
+  position: absolute !important;
+  z-index: 2147483647 !important;
+  width: 28px !important;
+  height: 28px !important;
+  border-radius: 50% !important;
+  border: none !important;
+  background: #ffffff !important;
+  box-shadow: 0 1px 5px rgba(0,0,0,0.28) !important;
+  cursor: pointer !important;
+  display: none;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 5px !important;
+  margin: 0 !important;
+  color: #666 !important;
+  transition: background 0.15s, color 0.15s, transform 0.1s !important;
+  box-sizing: border-box !important;
+}
+
+.wstt-mic-btn:hover {
+  background: #f0f0f0 !important;
+  transform: scale(1.1) !important;
+}
+
+.wstt-mic-btn--recording {
+  background: #e74c3c !important;
+  color: #fff !important;
+  animation: wstt-pulse 1.1s ease-in-out infinite !important;
+}
+
+.wstt-mic-btn--loading {
+  background: #f39c12 !important;
+  color: #fff !important;
+}
+
+.wstt-mic-btn svg {
+  width: 100% !important;
+  height: 100% !important;
+  display: block !important;
+}
+
+@keyframes wstt-pulse {
+  0%, 100% { box-shadow: 0 0 0 0   rgba(231,76,60,0.55); }
+  50%       { box-shadow: 0 0 0 7px rgba(231,76,60,0);    }
+}

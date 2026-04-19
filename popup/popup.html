@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      width: 300px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 13px;
+      color: #222;
+      background: #fff;
+    }
+
+    /* ── Header ── */
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 14px 10px;
+      border-bottom: 1px solid #eee;
+    }
+    .header svg { flex-shrink: 0; }
+    .header h1 { font-size: 14px; font-weight: 600; }
+    .header .badge {
+      margin-left: auto;
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 99px;
+      background: #eee;
+      color: #666;
+    }
+    .header .badge.active { background: #d4edda; color: #1a7a3a; }
+
+    /* ── Sections ── */
+    .section { padding: 12px 14px; border-bottom: 1px solid #f0f0f0; }
+    .section:last-child { border-bottom: none; }
+    .section-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: #999;
+      margin-bottom: 8px;
+    }
+
+    /* ── Record button ── */
+    #recordBtn {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      background: #2c2c2c;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      transition: background .15s;
+    }
+    #recordBtn:hover { background: #111; }
+    #recordBtn.recording { background: #e74c3c; animation: pop-pulse 1.1s ease-in-out infinite; }
+    #recordBtn.loading   { background: #f39c12; cursor: default; }
+    #recordBtn:disabled  { opacity: .5; cursor: default; }
+
+    @keyframes pop-pulse {
+      0%,100% { box-shadow: 0 0 0 0   rgba(231,76,60,.4); }
+      50%      { box-shadow: 0 0 0 8px rgba(231,76,60,0);  }
+    }
+
+    /* ── Status / result ── */
+    #status { font-size: 12px; color: #888; margin-top: 7px; min-height: 16px; }
+    #status.error { color: #c0392b; }
+
+    #resultBox {
+      display: none;
+      margin-top: 8px;
+      width: 100%;
+      min-height: 60px;
+      max-height: 120px;
+      padding: 8px;
+      font-size: 12px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      resize: vertical;
+      font-family: inherit;
+      color: #222;
+    }
+
+    /* ── Current site ── */
+    .site-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #f7f7f7;
+      border-radius: 6px;
+      padding: 7px 9px;
+      margin-bottom: 8px;
+    }
+    .site-row .hostname {
+      flex: 1;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .site-row .dot {
+      width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+      background: #ccc;
+    }
+    .site-row .dot.on { background: #2ecc71; }
+
+    /* ── Manual mode toggle ── */
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .toggle-row span { color: #444; }
+
+    /* Toggle switch */
+    .switch { position: relative; display: inline-block; width: 36px; height: 20px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute; inset: 0; background: #ccc; border-radius: 20px;
+      cursor: pointer; transition: background .2s;
+    }
+    .slider:before {
+      content: ""; position: absolute;
+      width: 14px; height: 14px; left: 3px; top: 3px;
+      background: #fff; border-radius: 50%; transition: transform .2s;
+    }
+    .switch input:checked + .slider { background: #2ecc71; }
+    .switch input:checked + .slider:before { transform: translateX(16px); }
+
+    /* ── Add/remove site button ── */
+    #siteToggleBtn {
+      width: 100%;
+      padding: 7px;
+      border: 1.5px solid #2c2c2c;
+      border-radius: 6px;
+      background: transparent;
+      color: #2c2c2c;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s, color .15s;
+    }
+    #siteToggleBtn:hover { background: #2c2c2c; color: #fff; }
+    #siteToggleBtn.remove {
+      border-color: #e74c3c; color: #e74c3c;
+    }
+    #siteToggleBtn.remove:hover { background: #e74c3c; color: #fff; }
+
+    /* ── Footer ── */
+    .footer {
+      padding: 8px 14px;
+      border-top: 1px solid #eee;
+      display: flex;
+      justify-content: flex-end;
+    }
+    .footer a {
+      font-size: 11px;
+      color: #999;
+      text-decoration: none;
+    }
+    .footer a:hover { color: #444; }
+
+    /* ── No API key warning ── */
+    .warning {
+      background: #fff8e1;
+      border: 1px solid #ffe082;
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-size: 12px;
+      color: #7a5c00;
+      margin-bottom: 8px;
+    }
+    .warning a { color: #7a5c00; font-weight: 600; }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="9" y="2" width="6" height="11" rx="3" fill="#2c2c2c"/>
+      <path d="M5 11a7 7 0 0014 0" stroke="#2c2c2c" stroke-width="1.8" stroke-linecap="round"/>
+      <line x1="12" y1="18" x2="12" y2="22" stroke="#2c2c2c" stroke-width="1.8" stroke-linecap="round"/>
+      <line x1="8"  y1="22" x2="16" y2="22" stroke="#2c2c2c" stroke-width="1.8" stroke-linecap="round"/>
+    </svg>
+    <h1>Whisper STT</h1>
+    <span class="badge" id="siteBadge">inactive</span>
+  </div>
+
+  <!-- Record section -->
+  <div class="section">
+    <div class="section-label">Record</div>
+    <div id="noKeyWarning" class="warning" style="display:none">
+      ⚠️ No API key set. <a href="#" id="openOptionsLink">Open options →</a>
+    </div>
+    <button id="recordBtn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+        <rect x="9" y="2" width="6" height="11" rx="3" fill="currentColor"/>
+        <path d="M5 11a7 7 0 0014 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <line x1="12" y1="18" x2="12" y2="22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <line x1="8"  y1="22" x2="16" y2="22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <span id="recordLabel">Start Recording</span>
+    </button>
+    <div id="status"></div>
+    <textarea id="resultBox" readonly placeholder="Transcription appears here…"></textarea>
+  </div>
+
+  <!-- Site section -->
+  <div class="section">
+    <div class="section-label">This Website</div>
+    <div class="site-row">
+      <div class="dot" id="siteDot"></div>
+      <div class="hostname" id="siteHostname">—</div>
+    </div>
+
+    <div class="toggle-row">
+      <span>Enable mic button on this site</span>
+      <label class="switch">
+        <input type="checkbox" id="manualToggle"/>
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <button id="siteToggleBtn">Add to whitelist</button>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <a href="#" id="optionsLink">⚙ Options (API key &amp; whitelist)</a>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
