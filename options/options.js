@@ -12,14 +12,26 @@ function normalizeHost(raw) {
 }
 
 function renderSites() {
-  siteList.innerHTML = "";
+  while (siteList.firstChild) siteList.removeChild(siteList.firstChild);
+
   if (sites.length === 0) {
-    siteList.innerHTML = `<li class="empty-hint" style="background:none;padding:4px 0">No sites added yet.</li>`;
+    const li = document.createElement("li");
+    li.className = "empty-hint";
+    li.style.cssText = "background:none;padding:4px 0";
+    li.textContent = "No sites added yet.";
+    siteList.appendChild(li);
     return;
   }
   sites.forEach((site, i) => {
-    const li = document.createElement("li");
-    li.innerHTML = `<span>${site}</span><button title="Remove" data-i="${i}">×</button>`;
+    const li   = document.createElement("li");
+    const span = document.createElement("span");
+    span.textContent = site;
+    const btn  = document.createElement("button");
+    btn.title = "Remove";
+    btn.dataset.i = i;
+    btn.textContent = "×";
+    li.appendChild(span);
+    li.appendChild(btn);
     siteList.appendChild(li);
   });
 }
