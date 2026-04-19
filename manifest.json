@@ -1,10 +1,10 @@
 {
   "manifest_version": 2,
   "name": "Whisper STT",
-  "version": "0.3",
+  "version": "0.4",
   "description": "Speech-to-text via OpenAI Whisper. Record from popup or inline mic button on whitelisted sites.",
 
-  "permissions": ["activeTab", "storage", "tabs"],
+  "permissions": ["activeTab", "storage", "tabs", "https://api.openai.com/*"],
 
   "browser_action": {
     "default_icon": {
