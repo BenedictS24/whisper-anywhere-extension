@@ -5,93 +5,36 @@
   <title>Whisper STT — Options</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      font-size: 14px;
-      color: #222;
-      background: #f4f4f4;
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      padding: 40px 16px;
-    }
-    .card {
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 2px 14px rgba(0,0,0,.08);
-      width: 100%;
-      max-width: 520px;
-      overflow: hidden;
-      align-self: flex-start;
-    }
-    .card-header {
-      padding: 20px 24px;
-      border-bottom: 1px solid #eee;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 14px; color: #222; background: #f4f4f4; min-height: 100vh; display: flex; justify-content: center; padding: 40px 16px; }
+    .card { background: #fff; border-radius: 12px; box-shadow: 0 2px 14px rgba(0,0,0,.08); width: 100%; max-width: 520px; overflow: hidden; align-self: flex-start; }
+    .card-header { padding: 20px 24px; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 12px; }
     .card-header div h1 { font-size: 16px; font-weight: 700; }
     .card-header div p  { font-size: 12px; color: #888; margin-top: 2px; }
-
     .section { padding: 20px 24px; border-bottom: 1px solid #f0f0f0; }
     .section:last-of-type { border-bottom: none; }
-
     label { display: block; font-weight: 700; margin-bottom: 4px; }
     .hint { font-size: 12px; color: #888; margin-bottom: 10px; line-height: 1.5; }
-
-    input[type=password] {
-      width: 100%; padding: 9px 11px; font-size: 13px;
-      border: 1.5px solid #ddd; border-radius: 7px;
-      font-family: inherit; outline: none; transition: border-color .15s;
-    }
+    input[type=password] { width: 100%; padding: 9px 11px; font-size: 13px; border: 1.5px solid #ddd; border-radius: 7px; font-family: inherit; outline: none; transition: border-color .15s; }
     input[type=password]:focus { border-color: #1a1a1a; }
-
     .site-list { list-style: none; margin-top: 10px; display: flex; flex-direction: column; gap: 6px; }
-    .site-list li {
-      display: flex; align-items: center; gap: 8px;
-      background: #f7f7f7; border-radius: 6px; padding: 7px 10px; font-size: 13px;
-    }
+    .site-list li { display: flex; align-items: center; gap: 8px; background: #f7f7f7; border-radius: 6px; padding: 7px 10px; font-size: 13px; }
     .site-list li span { flex: 1; }
-    .site-list li button {
-      background: none; border: none; color: #c0392b;
-      cursor: pointer; font-size: 18px; line-height: 1; padding: 0 2px;
-    }
+    .site-list li button { background: none; border: none; color: #c0392b; cursor: pointer; font-size: 18px; line-height: 1; padding: 0 2px; }
     .site-list li button:hover { color: #e74c3c; }
-    .empty-hint { color: #bbb; font-size: 12px; padding: 4px 0; }
-
     .add-row { display: flex; gap: 8px; margin-top: 10px; }
-    .add-row input {
-      flex: 1; padding: 8px 10px; font-size: 13px;
-      border: 1.5px solid #ddd; border-radius: 7px; outline: none;
-    }
+    .add-row input { flex: 1; padding: 8px 10px; font-size: 13px; border: 1.5px solid #ddd; border-radius: 7px; outline: none; }
     .add-row input:focus { border-color: #1a1a1a; }
-    .add-row button, .btn-save {
-      padding: 9px 16px; background: #1a1a1a; color: #fff;
-      border: none; border-radius: 7px; font-size: 13px;
-      font-weight: 700; cursor: pointer; transition: background .15s;
-    }
+    .add-row button, .btn-save { padding: 9px 16px; background: #1a1a1a; color: #fff; border: none; border-radius: 7px; font-size: 13px; font-weight: 700; cursor: pointer; transition: background .15s; }
     .add-row button:hover, .btn-save:hover { background: #000; }
-
     .btn-save { width: 100%; padding: 12px; font-size: 14px; margin-top: 4px; }
-
-    #saveStatus {
-      text-align: center; margin-top: 10px;
-      font-size: 13px; color: #27ae60; min-height: 18px;
-    }
-    #saveStatus.error { color: #c0392b; }
-
-    .privacy-box {
-      background: #f0f7ff; border: 1px solid #b3d4f5;
-      border-radius: 7px; padding: 12px 14px;
-      font-size: 12px; color: #1a5a9a; line-height: 1.6;
-    }
+    #saveStatus { text-align: center; margin-top: 10px; font-size: 13px; color: #27ae60; min-height: 18px; }
+    .privacy-box { background: #f0f7ff; border: 1px solid #b3d4f5; border-radius: 7px; padding: 12px 14px; font-size: 12px; color: #1a5a9a; line-height: 1.6; }
     code { background: #e8f0fe; padding: 1px 4px; border-radius: 3px; font-size: 11px; }
+    .version { padding: 10px 24px 16px; text-align: right; font-size: 11px; color: #ccc; }
   </style>
 </head>
 <body>
 <div class="card">
-
   <div class="card-header">
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
       <rect x="9" y="2" width="6" height="11" rx="3" fill="#1a1a1a"/>
@@ -99,26 +42,18 @@
       <line x1="12" y1="18" x2="12" y2="22" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round"/>
       <line x1="8"  y1="22" x2="16" y2="22" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round"/>
     </svg>
-    <div>
-      <h1>Whisper STT — Options</h1>
-      <p>Set your API key and manage whitelisted websites</p>
-    </div>
+    <div><h1>Whisper STT — Options</h1><p>API key and whitelisted websites</p></div>
   </div>
 
-  <!-- API Key -->
   <div class="section">
     <label for="apiKey">OpenAI API Key</label>
     <p class="hint">Get yours at <strong>platform.openai.com/api-keys</strong>. Stored locally, only sent to OpenAI.</p>
     <input type="password" id="apiKey" placeholder="sk-…"/>
   </div>
 
-  <!-- Whitelist -->
   <div class="section">
     <label>Whitelisted Websites</label>
-    <p class="hint">
-      The floating mic button appears automatically in text fields on these sites.<br>
-      Enter hostnames only, e.g. <code>github.com</code> or <code>mail.google.com</code>
-    </p>
+    <p class="hint">The floating mic button appears in text fields on these sites automatically.<br>Enter hostnames only, e.g. <code>github.com</code> or <code>perplexity.ai</code></p>
     <ul class="site-list" id="siteList"></ul>
     <div class="add-row">
       <input type="text" id="newSiteInput" placeholder="e.g. notion.so"/>
@@ -126,29 +61,19 @@
     </div>
   </div>
 
-  <!-- Privacy -->
   <div class="section">
     <div class="privacy-box">
-      🔒 <strong>Privacy:</strong> Your audio goes directly from your browser to OpenAI's Whisper API over HTTPS.
-      Nothing is stored on any third-party server. OpenAI retains audio up to 30 days for abuse monitoring by default.
-      For full privacy, run Whisper locally and change the API URL in <code>content.js</code> and <code>popup.js</code>
-      to <code>http://localhost:8000/transcribe</code>.
+      🔒 <strong>Privacy:</strong> Audio goes directly from your browser to OpenAI over HTTPS. Nothing is stored on any third-party server. OpenAI retains audio up to 30 days for abuse monitoring by default.
     </div>
   </div>
 
-  <!-- Save -->
   <div class="section">
     <button class="btn-save" id="saveBtn">Save Settings</button>
     <div id="saveStatus"></div>
   </div>
 
-  <!-- Version -->
-  <div style="padding: 10px 24px 16px; text-align: right;">
-    <span id="versionLabel" style="font-size:11px; color:#ccc;">Whisper STT v1.0</span>
-  </div>
-
+  <div class="version">Whisper STT v1.1</div>
 </div>
 <script src="options.js"></script>
 </body>
 </html>
-

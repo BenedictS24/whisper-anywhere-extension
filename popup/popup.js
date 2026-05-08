@@ -1,17 +1,16 @@
-const recordBtn      = document.getElementById("recordBtn");
-const recordLabel    = document.getElementById("recordLabel");
-const statusEl       = document.getElementById("status");
-const resultBox      = document.getElementById("resultBox");
-const siteBadge      = document.getElementById("siteBadge");
-const siteDot        = document.getElementById("siteDot");
-const siteHostname   = document.getElementById("siteHostname");
-const siteToggleBtn  = document.getElementById("siteToggleBtn");
-const manualToggle   = document.getElementById("manualToggle");
-const noKeyWarning   = document.getElementById("noKeyWarning");
-const optionsLink    = document.getElementById("optionsLink");
+const recordBtn       = document.getElementById("recordBtn");
+const recordLabel     = document.getElementById("recordLabel");
+const statusEl        = document.getElementById("status");
+const resultBox       = document.getElementById("resultBox");
+const siteBadge       = document.getElementById("siteBadge");
+const siteDot         = document.getElementById("siteDot");
+const siteHostname    = document.getElementById("siteHostname");
+const siteToggleBtn   = document.getElementById("siteToggleBtn");
+const manualToggle    = document.getElementById("manualToggle");
+const noKeyWarning    = document.getElementById("noKeyWarning");
+const optionsLink     = document.getElementById("optionsLink");
 const openOptionsLink = document.getElementById("openOptionsLink");
 
-// ─── Recording state lives in the popup itself ────────────────────────────────
 let mediaRecorder = null;
 let audioChunks   = [];
 let isRecording   = false;
@@ -19,14 +18,7 @@ let isRecording   = false;
 // ─── Status helpers ───────────────────────────────────────────────────────────
 function setStatus(msg, type = "") {
   statusEl.textContent = msg;
-  statusEl.className = type; // "error", "ok", or ""
-}
-
-function setBusy(label) {
-  recordBtn.disabled = true;
-  recordBtn.classList.remove("recording");
-  recordBtn.classList.add("loading");
-  recordLabel.textContent = label;
+  statusEl.className = type;
 }
 
 function setIdle() {
@@ -37,44 +29,36 @@ function setIdle() {
   browser.runtime.sendMessage({ action: "recordingStopped" }).catch(() => {});
 }
 
-// ─── Start recording ──────────────────────────────────────────────────────────
+// ─── Recording ────────────────────────────────────────────────────────────────
 async function startRecording() {
   setStatus("Requesting microphone access…");
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     audioChunks = [];
-
     const mimeType = MediaRecorder.isTypeSupported("audio/webm") ? "audio/webm" : "";
-    mediaRecorder = mimeType
-      ? new MediaRecorder(stream, { mimeType })
-      : new MediaRecorder(stream);
-
+    mediaRecorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
     mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
-    mediaRecorder.start(100); // chunk every 100 ms
-
+    mediaRecorder.start(100);
     isRecording = true;
     recordBtn.classList.add("recording");
-    recordBtn.classList.remove("loading");
     recordBtn.disabled = false;
     recordLabel.textContent = "⏹ Stop & Transcribe";
     setStatus("🔴 Recording — speak now…");
     browser.runtime.sendMessage({ action: "recordingStarted" }).catch(() => {});
-
   } catch (err) {
     setIdle();
-    if (err.name === "NotAllowedError") {
-      setStatus("Microphone permission denied. Allow it in Firefox and try again.", "error");
-    } else {
-      setStatus("Mic error: " + err.message, "error");
-    }
+    setStatus(err.name === "NotAllowedError"
+      ? "Microphone permission denied. Allow it in Firefox and try again."
+      : "Mic error: " + err.message, "error");
   }
 }
 
-// ─── Stop + transcribe ────────────────────────────────────────────────────────
 async function stopRecording() {
   if (!mediaRecorder) return;
-
-  setBusy("Stopping…");
+  recordBtn.disabled = true;
+  recordBtn.classList.remove("recording");
+  recordBtn.classList.add("loading");
+  recordLabel.textContent = "Stopping…";
 
   await new Promise(resolve => {
     mediaRecorder.onstop = resolve;
@@ -95,7 +79,7 @@ async function stopRecording() {
     return;
   }
 
-  setBusy("Transcribing…");
+  recordLabel.textContent = "Transcribing…";
   setStatus("Sending audio to Whisper API…");
 
   const mimeType = audioChunks[0]?.type || "audio/webm";
@@ -110,7 +94,6 @@ async function stopRecording() {
   const formData = new FormData();
   formData.append("file", blob, "audio.webm");
   formData.append("model", "whisper-1");
-  // No "language" → Whisper auto-detects
 
   try {
     const res = await fetch("https://api.openai.com/v1/audio/transcriptions", {
@@ -118,7 +101,6 @@ async function stopRecording() {
       headers: { Authorization: `Bearer ${openai_key}` },
       body: formData
     });
-
     const data = await res.json();
 
     if (data.error) {
@@ -126,16 +108,18 @@ async function stopRecording() {
     } else if (data.text) {
       resultBox.style.display = "block";
       resultBox.value = data.text;
-      setStatus("Done ✓", "ok");
 
-      // Try to inject into the active page's focused text field
+      // Try to inject into page
       try {
         const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
         const resp = await browser.tabs.sendMessage(tab.id, { action: "injectText", text: data.text });
-        if (resp && resp.ok) {
+
+        if (resp && resp.method === "clipboard") {
+          setStatus("Done ✓ — copied to clipboard (no text field was focused)", "clipboard");
+        } else if (resp && resp.ok) {
           setStatus("Done ✓ — text inserted into page", "ok");
         } else {
-          setStatus("Done ✓ — no text field focused on page (copy above)", "ok");
+          setStatus("Done ✓ — copy text above manually", "ok");
         }
       } catch {
         setStatus("Done ✓ — copy text above manually", "ok");
@@ -150,7 +134,6 @@ async function stopRecording() {
   setIdle();
 }
 
-// ─── Button click ─────────────────────────────────────────────────────────────
 recordBtn.addEventListener("click", () => {
   if (isRecording) {
     stopRecording();
@@ -162,8 +145,8 @@ recordBtn.addEventListener("click", () => {
   }
 });
 
-// ─── Site / whitelist helpers ─────────────────────────────────────────────────
-let currentHost  = "";
+// ─── Site / whitelist ─────────────────────────────────────────────────────────
+let currentHost   = "";
 let isWhitelisted = false;
 
 function normalizeHost(raw) {
@@ -207,40 +190,30 @@ siteToggleBtn.addEventListener("click", async () => {
 manualToggle.addEventListener("change", async () => {
   const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
   try {
-    await browser.tabs.sendMessage(tab.id, {
-      action: manualToggle.checked ? "enableManual" : "disableManual"
-    });
-  } catch { /* content script may not be ready yet */ }
+    await browser.tabs.sendMessage(tab.id, { action: manualToggle.checked ? "enableManual" : "disableManual" });
+  } catch {}
 });
 
-// ─── Options links ────────────────────────────────────────────────────────────
 optionsLink.addEventListener("click", e => { e.preventDefault(); browser.runtime.openOptionsPage(); });
 openOptionsLink.addEventListener("click", e => { e.preventDefault(); browser.runtime.openOptionsPage(); });
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 async function init() {
   const { openai_key, whitelist = [] } = await browser.storage.local.get(["openai_key", "whitelist"]);
-
-  if (!openai_key) {
-    noKeyWarning.style.display = "block";
-    recordBtn.disabled = true;
-  }
+  if (!openai_key) { noKeyWarning.style.display = "block"; recordBtn.disabled = true; }
 
   const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
   const url = tab?.url || "";
-
   try { currentHost = new URL(url).hostname; } catch { currentHost = ""; }
 
   const isBrowserPage = !currentHost || url.startsWith("about:") || url.startsWith("moz-extension:");
-
   if (isBrowserPage) {
     siteHostname.textContent = "N/A (browser page)";
     document.getElementById("siteSection").style.display = "none";
   } else {
     siteHostname.textContent = currentHost;
     const wl = whitelist.map(normalizeHost);
-    const matched = wl.some(s => currentHost === s || currentHost.endsWith("." + s));
-    updateSiteUI(matched);
+    updateSiteUI(wl.some(s => currentHost === s || currentHost.endsWith("." + s)));
   }
 }
 
